@@ -3,8 +3,8 @@ import fs  from 'fs';
 
 cloudinary.config({
     cloud_name:process.env.CLOUDINARY_CLOUD_NAME,
-    api_key:CLOUDINARY_API_KEY,
-    api_secret:CLOUDINARY_API_SECRET
+    api_key:process.env.CLOUDINARY_API_KEY,
+    api_secret:process.env.CLOUDINARY_API_SECRET
 })
 
  async function uploadFile(fileLocation=''){
@@ -14,6 +14,7 @@ cloudinary.config({
 
             if(response) {
                 console.log("File uploaded successfully,: ",response.url)
+                fs.unlinkSync(fileLocation)
                 return response
             }else {
                 console.log("File not uploaded succesfuly!!!")
