@@ -16,10 +16,6 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
-app.get("/",(req,res)=>{
-    res.send("got it")
-})
-
 app.use("/user",userRouter)
 
 
