@@ -3,7 +3,9 @@ import {
     registerUserController,
     loginUserController,
     logoutUserController,
-    refreshAccessToken
+    refreshAccessToken,
+    changeUserPassword,
+    getCurrentUser
  } from "../controllers/user.controller.js"
 import {upload} from "../middlewares/multer.middleware.js"
 import { verifyJwtToken } from "../middlewares/auth.middleware.js"
@@ -26,6 +28,16 @@ userRouter.route("/logout").post(
 
 userRouter.route("/refresh-token").post(
     refreshAccessToken
+)
+
+userRouter.route("/change-password").post(
+    verifyJwtToken,
+    changeUserPassword
+)
+
+userRouter.route("/get-user-data").post(
+    verifyJwtToken,
+    getCurrentUser
 )
 
 export {userRouter}

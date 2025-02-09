@@ -168,36 +168,34 @@ const refreshAccessToken = asyncHandler(async function (req, res) {
         if (!incomingRefreshToken) {
             throw new ApiErrorHandler(400, "Invaild refresh token.Please login manually.")
         }
-    
-        const decodedTokenInfo =  jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
-    
+
+        const decodedTokenInfo = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET)
+
         if (!decodedTokenInfo) {
             throw new ApiErrorHandler(400, "Invaild refresh token.Please login manually.")
         }
-    
+
         const user = await User.findById(decodedTokenInfo?._id)
-    
+
         if (!user) {
             throw new ApiErrorHandler(400, "User not found.Invaid request.")
         }
-    
+
         if (user?.refreshToken && incomingRefreshToken !== user?.refreshToken) {
             throw new ApiErrorHandler(400, "Refresh Token is expired or used. ")
         }
-    
 
-    
         const { accessToken = '', refreshToken = '' } = await generateAccessAndRefreshToken(user?._id)
-    console.debug(accessToken,refreshToken)
+
         if (!(accessToken || refreshToken)) {
             throw new ApiErrorHandler(500, "Error in generating tokens.")
         }
-    
+
         const options = {
             httpOnly: true,
             secure: true
         }
-    
+
         return res
             .status(200)
             .cookie("accessToken", accessToken, options)
@@ -208,15 +206,48 @@ const refreshAccessToken = asyncHandler(async function (req, res) {
                 "Access Token refreshed successfully."
             ))
     } catch (err) {
-        throw new ApiErrorHandler(400, err?.message||"Invalid refresh token.")    
+        throw new ApiErrorHandler(400, err?.message || "Invalid refresh token.")
+    }
+})
+
+
+const changeUserPassword = asyncHandler(async function (req,res) {
+    const {newPassword,oldPassword}  = req.body
+
+    const user = await User.findById(req.user._id)
+    if(!user) {
+        throw new ApiErrorHandler(400, "User not found")
+    }
+
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword)
+    if(!isPasswordCorrect) {
+        throw new ApiErrorHandler(400, "Invalid old Password.")
     }
 
 
+    user.password = newPassword
+    await user.save({validateBeforeSave:false })
+
+    return res
+           .status(200)
+           .json(new ApiResponseHandler(
+            200,
+            null,
+            "Password changed successfully."
+           ))
+
+})
+
+
+const getCurrentUser = asyncHandler(async function (req,res) {
+    return res.status(200).json(new ApiResponseHandler(200,req?.user,"Current user data fetched successfully."))
 })
 
 export {
     registerUserController,
     loginUserController,
     logoutUserController,
-    refreshAccessToken
+    refreshAccessToken,
+    changeUserPassword,
+    getCurrentUser
 }
