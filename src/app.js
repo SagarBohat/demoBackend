@@ -16,7 +16,11 @@ app.use(express.static("public"))
 app.use(cookieParser())
 
 
-app.use("/user",userRouter)
+app.get('/api/v1',(req,res)=>{
+    res.send("Working")
+})
+
+app.use("/api/v1/user",userRouter)
 
 
 export {app}
